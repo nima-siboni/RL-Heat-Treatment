@@ -124,7 +124,7 @@ def create_config(base_config, env_cfg_dir='./', agent_cfg_dir='./'):
     return base_config
 
 
-def load_training_config(training_cfg_dir='./'):
+def load_training_config(training_cfg_dir='./configs/'):
     """
     loads the config for training.
     :param training_cfg_dir: the location of the config file training_config.cfg

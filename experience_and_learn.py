@@ -24,8 +24,8 @@ ModelCatalog.register_custom_model("keras_Q_model", keras_q_model)
 # 1.1.1 -- the DQN configs
 
 config = create_config(base_config=dqn.DEFAULT_CONFIG.copy(),
-                       env_cfg_dir='./',
-                       agent_cfg_dir='./')
+                       env_cfg_dir='./configs/',
+                       agent_cfg_dir='./configs/')
 
 # ---------------------------------------------
 
