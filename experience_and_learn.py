@@ -6,7 +6,8 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.utils.schedules import Schedule, PiecewiseSchedule
 from Furnace import Furnace
 from model.keras_model import KerasQModel
-from utils.utils import create_config, create_end_points, custom_log_creator, create_or_clean_training_dirs, \
+from utils.utils import create_config, create_end_points, custom_log_creator, \
+    create_or_clean_training_dirs, \
     load_training_config
 
 # ---------------------------------------------
@@ -18,7 +19,7 @@ from utils.utils import create_config, create_end_points, custom_log_creator, cr
 # 1.1 -- The config of the DDQN trainer and its env.
 
 # 1.1.0 -- register the keras model
-keras_q_model = KerasQModel 
+keras_q_model = KerasQModel
 ModelCatalog.register_custom_model("keras_Q_model", keras_q_model)
 
 # 1.1.1 -- the DQN configs
@@ -33,7 +34,8 @@ endpoints = create_end_points()
 
 config["exploration_config"].update(
     {  # Further Configs for the Exploration class' constructor:
-        "epsilon_schedule": PiecewiseSchedule(endpoints=endpoints, framework="tf", outside_value=0.01)
+        "epsilon_schedule": PiecewiseSchedule(endpoints=endpoints, framework="tf",
+                                              outside_value=0.01)
     }
 )
 
@@ -46,10 +48,12 @@ checkpoint_interval = training_config["checkpoint_interval"]
 
 create_or_clean_training_dirs(checkpoint_dir=training_config["checkpoint_dir"],
                               logger_dir=training_config["logger_dir"],
-                              clean_previous_checkpoints=training_config["clean_previous_checkpoints"],
-                              clean_previous_logs=training_config["clean_previous_logs"])
+                              clean_previous_checkpoints=training_config[
+                                  "clean_previous_checkpoints"],
+                              clean_previous_logs=training_config[
+                                  "clean_previous_logs"])
 
-
+config.update({"disable_env_checking": True})
 # ---------------------------------------------
 
 # 2 -- Create the agent and the environment
