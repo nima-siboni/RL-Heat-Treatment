@@ -52,13 +52,11 @@ create_or_clean_training_dirs(checkpoint_dir=training_config["checkpoint_dir"],
                                   "clean_previous_checkpoints"],
                               clean_previous_logs=training_config[
                                   "clean_previous_logs"])
-
-config.update({"disable_env_checking": True})
 # ---------------------------------------------
 
 # 2 -- Create the agent and the environment
 # 2.1 -- Initialize  RAY
-ray.init(num_cpus=config["num_workers"] + 1, local_mode=True)
+ray.init(num_cpus=config["num_workers"] + 1)
 # ---------------------------------------------
 
 # 2.2 -- creating the trainer and the env
