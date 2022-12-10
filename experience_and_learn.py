@@ -1,6 +1,6 @@
 import numpy as np
 import ray
-import ray.rllib.agents.dqn as dqn
+import ray.rllib.algorithms.dqn as dqn
 from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from ray.rllib.utils.schedules import Schedule, PiecewiseSchedule
@@ -56,11 +56,12 @@ create_or_clean_training_dirs(checkpoint_dir=training_config["checkpoint_dir"],
 
 # 2 -- Create the agent and the environment
 # 2.1 -- Initialize  RAY
-ray.init(num_cpus=config["num_workers"] + 1)
-# ---------------------------------------------
 
+ray.init(num_cpus=config["num_workers"] + 1, local_mode=False)
+# ---------------------------------------------
+config["eager_tracing"] = False
 # 2.2 -- creating the trainer and the env
-trainer = dqn.DQNTrainer(
+trainer = dqn.DQN(
     config=config,
     env=Furnace,
     logger_creator=custom_log_creator(training_config["logger_dir"]))

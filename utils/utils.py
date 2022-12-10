@@ -89,7 +89,9 @@ def load_env_config(env_config_dir='./'):
     if env_config["stop_action"] == "True":
         env_config["stop_action"] = True
 
-    env_config["G_list"] = np.fromstring(env_config["G_list"], dtype=float, sep=',')
+    # env_config["G_list"] = np.array(
+    #         [float(item) for item in env_config["G_list"].split(",")])
+
     assert len(env_config["G_list"]) > 0, 'Are you sure about G_list? there might be extra []'
     return env_config
 
@@ -103,6 +105,10 @@ def load_agent_config(agent_cfg_dir='./'):
     the dictionary for agent's config
     """
     agent_config = json.load(open(agent_cfg_dir + 'agent_config.cfg'))
+    # if agent_config["eager_tracing"] == "True":
+    #     agent_config["eager_tracing"] = True
+    # else:
+    #     agent_config["eager_tracing"] = False
     return agent_config
 
 
