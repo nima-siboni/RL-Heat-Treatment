@@ -1,14 +1,18 @@
-import numpy as np
+from __future__ import annotations
+
 import ray
 import ray.rllib.algorithms.dqn as dqn
-from ray.tune.logger import pretty_print
-from ray.rllib.models import ModelCatalog
-from ray.rllib.utils.schedules import Schedule, PiecewiseSchedule
 from Furnace import Furnace
+from ray.rllib.models import ModelCatalog
+from ray.rllib.utils.schedules import PiecewiseSchedule
+from ray.tune.logger import pretty_print
+
 from model.keras_model import KerasQModel
-from utils.utils import create_config, create_end_points, custom_log_creator, \
-    create_or_clean_training_dirs, \
-    load_training_config
+from utils.utils import create_config
+from utils.utils import create_end_points
+from utils.utils import create_or_clean_training_dirs
+from utils.utils import custom_log_creator
+from utils.utils import load_training_config
 
 # ---------------------------------------------
 # 1 - Setting the configs
@@ -20,54 +24,60 @@ from utils.utils import create_config, create_end_points, custom_log_creator, \
 
 # 1.1.0 -- register the keras model
 keras_q_model = KerasQModel
-ModelCatalog.register_custom_model("keras_Q_model", keras_q_model)
+ModelCatalog.register_custom_model('keras_Q_model', keras_q_model)
 
 # 1.1.1 -- the DQN configs
 
-config = create_config(base_config=dqn.DEFAULT_CONFIG.copy(),
-                       env_cfg_dir='./configs/',
-                       agent_cfg_dir='./configs/')
+config = create_config(
+    base_config=dqn.DEFAULT_CONFIG.copy(),
+    env_cfg_dir='./configs/',
+    agent_cfg_dir='./configs/',
+)
 
 # ---------------------------------------------
 
 endpoints = create_end_points()
 
-config["exploration_config"].update(
+config['exploration_config'].update(
     {  # Further Configs for the Exploration class' constructor:
-        "epsilon_schedule": PiecewiseSchedule(endpoints=endpoints, framework="tf",
-                                              outside_value=0.01)
-    }
+        'epsilon_schedule': PiecewiseSchedule(
+            endpoints=endpoints,
+            framework='tf',
+            outside_value=0.01,
+        ),
+    },
 )
 
 # 1.2 -- Rounds of training and Check point parameters
 # (if and how often to write the network)
 training_config = load_training_config()
-nr_training_rounds = training_config["nr_training_rounds"]
+nr_training_rounds = training_config['nr_training_rounds']
 
-checkpoint_interval = training_config["checkpoint_interval"]
+checkpoint_interval = training_config['checkpoint_interval']
 
-create_or_clean_training_dirs(checkpoint_dir=training_config["checkpoint_dir"],
-                              logger_dir=training_config["logger_dir"],
-                              clean_previous_checkpoints=training_config[
-                                  "clean_previous_checkpoints"],
-                              clean_previous_logs=training_config[
-                                  "clean_previous_logs"])
+create_or_clean_training_dirs(
+    checkpoint_dir=training_config['checkpoint_dir'],
+    logger_dir=training_config['logger_dir'],
+    clean_previous_checkpoints=training_config['clean_previous_checkpoints'],
+    clean_previous_logs=training_config['clean_previous_logs'],
+)
 # ---------------------------------------------
 
 # 2 -- Create the agent and the environment
 # 2.1 -- Initialize  RAY
 
-ray.init(num_cpus=config["num_workers"] + 1, local_mode=False)
+ray.init(num_cpus=config['num_workers'] + 1, local_mode=False)
 # ---------------------------------------------
-config["eager_tracing"] = False
+config['eager_tracing'] = False
 # 2.2 -- creating the trainer and the env
 trainer = dqn.DQN(
     config=config,
     env=Furnace,
-    logger_creator=custom_log_creator(training_config["logger_dir"]))
+    logger_creator=custom_log_creator(training_config['logger_dir']),
+)
 
-if training_config["resume_training"]:
-    trainer.restore(training_config["restoring_dir"])
+if training_config['resume_training']:
+    trainer.restore(training_config['restoring_dir'])
 # ---------------------------------------------
 
 # 3 -- Training and savings
@@ -76,5 +86,7 @@ for i in range(nr_training_rounds):
     print(pretty_print(result))
 
     if i % checkpoint_interval == 0:
-        checkpoint = trainer.save(checkpoint_dir=training_config["checkpoint_dir"])
-        print("checkpoint saved at", checkpoint)
+        checkpoint = trainer.save(
+            checkpoint_dir=training_config['checkpoint_dir'],
+        )
+        print('checkpoint saved at', checkpoint)

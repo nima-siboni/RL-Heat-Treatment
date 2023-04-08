@@ -1,5 +1,5 @@
 # Reinforcement Learning for Heat-treatment
-This is a reinforcement learning solution for finding the optimal heat-treatment in material sciences. The reinforcement learning is done with RLlib on a 2D phase-field environment, [Furnace-Env](https://github.com/nima-siboni/Furnace-Env). 
+This is a reinforcement learning solution for finding the optimal heat-treatment in material sciences. The reinforcement learning is done with RLlib on a 2D phase-field environment, [Furnace-Env](https://github.com/nima-siboni/Furnace-Env).
 ## 0 -- Installation
 
 ### 0.1 -- Creating the conda env
@@ -69,7 +69,7 @@ To start learning, execute the following command within the ```RL-Heat-Treatment
 
 ## 3 -- Evaluating the trained agent
 To evaluate the agent's performance, in ```agents_performance.py```, set:
-* the directory from where the agent should be loaded or you can alternatively set the 
+* the directory from where the agent should be loaded or you can alternatively set the
 ```find_the_latest_agent = True``` to load the last checkpoint:
 ```buildoutcfg
 checkpoint_dir = 'training_results/checkpoints/checkpoint_000031/checkpoint-31'
@@ -80,7 +80,7 @@ results_directory = './agents_performance_analysis/'
 ```
 Executing this file, creates a directory with one subdirectory for each evaluation episode containing:
 * the initial phase field,
-* the final phase field, 
+* the final phase field,
 * a GIF of intermediate PFs,
 * temperature vs step profile,
 * the density vs steps,
