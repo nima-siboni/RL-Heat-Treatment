@@ -6,10 +6,13 @@ from os import listdir
 from os import makedirs
 from os import path
 from shutil import rmtree
+from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
 from ray.tune.logger import UnifiedLogger
+from ray.rllib.algorithms.dqn import dqn
+from ray.rllib.utils.schedules import PiecewiseSchedule
 
 
 def custom_log_creator(custom_path):
@@ -67,92 +70,48 @@ def plot_the_pf(state, pause=0.2):
     plt.pause(pause)
 
 
-def load_env_config(env_config_dir='./'):
+def create_config(env_cfg_path: str, algorithm_cfg_path: str) -> Dict:
     """
-    loads the environment config from the env_config.cfg
+    Read the env config and algorithm config and create the config dictionary needed for RLlib.
 
-    :param env_config_dir: the dir in which the env_config.cfg is.
-    :return:
-    env_config as a dictionary.
+    Args:
+         algorithm_cfg_path: path to json file which has the modification to the base dqn config.
+         env_cfg_path: path to a json file which has the config of the env.
+    Returns:
+          the combined config.
     """
-    env_config = json.load(open(env_config_dir + 'env_config.cfg'))
-
-    if env_config['termination_change_criterion'] == 'None':
-        env_config['termination_change_criterion'] = None
-
-    if env_config['termination_temperature_criterion'] == 'True':
-        env_config['termination_temperature_criterion'] = True
-    if env_config['termination_temperature_criterion'] == 'False':
-        env_config['termination_temperature_criterion'] = False
-
-    if env_config['verbose'] == 'True':
-        env_config['verbose'] = True
-
-    if env_config['verbose'] == 'False':
-        env_config['verbose'] = False
-
-    if env_config['stop_action'] == 'False':
-        env_config['stop_action'] = False
-
-    if env_config['stop_action'] == 'True':
-        env_config['stop_action'] = True
-
-    # env_config["G_list"] = np.array(
-    #         [float(item) for item in env_config["G_list"].split(",")])
-
-    assert (
-        len(
-            env_config['G_list'],
-        )
-        > 0
-    ), 'Are you sure about G_list? there might be extra []'
-    return env_config
-
-
-def load_agent_config(agent_cfg_dir='./'):
-    """
-    reads the dictionary in agent_cfg.cfg and returns the dictionary.
-
-    :param agent_cfg_dir: the address of the directory which has agent_cfg.cfg
-    :return:
-    the dictionary for agent's config
-    """
-    agent_config = json.load(open(agent_cfg_dir + 'agent_config.cfg'))
-    # if agent_config["eager_tracing"] == "True":
-    #     agent_config["eager_tracing"] = True
-    # else:
-    #     agent_config["eager_tracing"] = False
-    return agent_config
-
-
-def create_config(base_config, env_cfg_dir='./', agent_cfg_dir='./'):
-    """
-    Creates the config dictionary needed for the RLlib
-
-    :param base_config: the config to start with
-    (for example the DDQN or PPO default config)
-    :param env_cfg_dir: the directory which has env_config.cfg
-    :param agent_cfg_dir: the directory which has agent_config.cfg
-    """
-    env_config = load_env_config(env_config_dir=env_cfg_dir)
-    agent_config = load_agent_config(agent_cfg_dir=agent_cfg_dir)
+    config = dqn.DQNConfig().to_dict()
+    env_config = json.load(open(env_cfg_path))
+    config['env_config'] = env_config
+    agent_config = json.load(open(algorithm_cfg_path))
     agent_config['local_tf_session_args'] = {
         'intra_op_parallelism_threads': agent_config['num_workers'],
         'inter_op_parallelism_threads': agent_config['num_workers'],
     }
-    base_config.update(agent_config)
-    base_config['env_config'] = env_config
-    return base_config
+    config.update(agent_config)
+
+    # update the exploration config
+    config['exploration_config'].update(
+        {  # Further Configs for the Exploration class' constructor:
+            'epsilon_schedule': PiecewiseSchedule(
+                endpoints=create_end_points(),
+                framework='tf',
+                outside_value=0.01,
+            ),
+        },
+    )
+    config["logger_creator"] = custom_log_creator("training_results/checkpoints/")
+    return config
 
 
-def load_training_config(training_cfg_dir='./configs/'):
+def load_training_config(training_cfg_path='./configs/'):
     """
     loads the config for training.
-    :param training_cfg_dir: the location of the config file
-    training_config.cfg
+    :param training_cfg_path: the location of the config file
+    training_config.json
     :returns: the training config as dictionary
     """
-    training_config = json.load(open(training_cfg_dir + 'training_config.cfg'))
+    training_config = json.load(open(training_cfg_path))
     if training_config['resume_training'] == 'False':
         training_config['resume_training'] = False
     if training_config['resume_training'] == 'True':
