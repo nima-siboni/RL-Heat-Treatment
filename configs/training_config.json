@@ -1,9 +1,10 @@
-{"nr_training_rounds": 20000,
+{
+ "nr_training_rounds": 20000,
  "checkpoint_interval": 200,
- "clean_previous_checkpoints": "True",
+ "clean_previous_checkpoints": true,
  "checkpoint_dir": "training_results/checkpoints/",
- "clean_previous_logs": "True",
+ "clean_previous_logs": true,
  "logger_dir": "training_results/logdir/",
- "resume_training": "False",
+ "resume_training": true,
  "restoring_dir": "training_results/checkpoints/checkpoint_002461/checkpoint-2461"
  }
