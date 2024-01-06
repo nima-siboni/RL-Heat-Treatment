@@ -1,6 +1,6 @@
 -e git+https://github.com/nima-siboni/Furnace-Env#egg=Furnace
 numpy==1.21.0
-ray==2.8.0
+ray==2.9.0
 ray[rllib]
 tensorboard==2.8.0
 tensorflow==2.8.0
