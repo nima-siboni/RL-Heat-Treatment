@@ -10,7 +10,7 @@ from ray.tune.logger import pretty_print
 from furnace import Furnace
 from model.keras_model import KerasQModel
 
-from utils.utils import create_config
+from utils.utils import create_config, custom_log_creator
 
 from utils.utils import create_or_clean_training_dirs
 
@@ -55,14 +55,14 @@ create_or_clean_training_dirs(
 # 2 -- Create the agent and the environment
 # 2.1 -- Initialize  RAY
 
-ray.init(num_cpus=config['num_workers'] + 1, local_mode=False)
+# ray.init(num_cpus=config['num_workers'] + 1, local_mode=False)
 # ---------------------------------------------
-# config['eager_tracing'] = False
+
 # 2.2 -- creating the trainer and the env
 
 config = dqn.DQNConfig().update_from_dict(config)
 
-agent = dqn.DQN(config=config, env=Furnace)
+agent = dqn.DQN(config=config, env=Furnace, logger_creator=custom_log_creator(training_config["logger_dir"]))
 if training_config['resume_training']:
     agent.restore(training_config['restoring_dir'])
 # ---------------------------------------------
@@ -74,6 +74,6 @@ for i in range(nr_training_rounds):
 
     if i % checkpoint_interval == 0:
         checkpoint = agent.save(
-            checkpoint_dir=training_config['checkpoint_dir'],
+            checkpoint_dir=training_config['checkpoint_dir'] + "/checkpoint_" + str(i),
         )
         print('checkpoint saved at', checkpoint)
