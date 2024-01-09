@@ -5,6 +5,6 @@
  "checkpoint_dir": "training_results/checkpoints/",
  "clean_previous_logs": true,
  "logger_dir": "training_results/logdir/",
- "resume_training": true,
+ "resume_training": false,
  "restoring_dir": "training_results/checkpoints/checkpoint_002461/checkpoint-2461"
  }
