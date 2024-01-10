@@ -84,23 +84,22 @@ def create_config(env_cfg_path: str, algorithm_cfg_path: str) -> Dict:
     env_config = json.load(open(env_cfg_path))
     config['env_config'] = env_config
     agent_config = json.load(open(algorithm_cfg_path))
-    agent_config['local_tf_session_args'] = {
-        'intra_op_parallelism_threads': agent_config['num_workers'],
-        'inter_op_parallelism_threads': agent_config['num_workers'],
-    }
+    # agent_config['local_tf_session_args'] = {
+    #     'intra_op_parallelism_threads': agent_config['num_workers'],
+    #     'inter_op_parallelism_threads': agent_config['num_workers'],
+    # }
     config.update(agent_config)
 
     # update the exploration config
-    config['exploration_config'].update(
-        {  # Further Configs for the Exploration class' constructor:
-            'epsilon_schedule': PiecewiseSchedule(
-                endpoints=create_end_points(),
-                framework='tf',
-                outside_value=0.01,
-            ),
-        },
-    )
-    config["logger_creator"] = custom_log_creator("training_results/checkpoints/")
+    # config['exploration_config'].update(
+    #     {  # Further Configs for the Exploration class' constructor:
+    #         'epsilon_schedule': PiecewiseSchedule(
+    #             endpoints=create_end_points(),
+    #             framework='tf',
+    #             outside_value=0.01,
+    #         ),
+    #     },
+    # )
     return config
 
 
