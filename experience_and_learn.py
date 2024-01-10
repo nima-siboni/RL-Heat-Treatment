@@ -50,6 +50,8 @@ create_or_clean_training_dirs(
     clean_previous_checkpoints=training_config['clean_previous_checkpoints'],
     clean_previous_logs=training_config['clean_previous_logs'],
 )
+config["logger_creator"] = custom_log_creator(training_config['logger_dir'])
+
 # ---------------------------------------------
 
 # 2 -- Create the agent and the environment
@@ -60,9 +62,9 @@ create_or_clean_training_dirs(
 
 # 2.2 -- creating the trainer and the env
 
-config = dqn.DQNConfig().update_from_dict(config)
+agent = dqn.DQNConfig().update_from_dict(config).environment(Furnace).build()
 
-agent = dqn.DQN(config=config, env=Furnace, logger_creator=custom_log_creator(training_config["logger_dir"]))
+# agent = dqn.DQN(config=config, env=Furnace, logger_creator=)
 if training_config['resume_training']:
     agent.restore(training_config['restoring_dir'])
 # ---------------------------------------------
