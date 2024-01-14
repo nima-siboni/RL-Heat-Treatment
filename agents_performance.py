@@ -6,14 +6,14 @@ from os import path
 import matplotlib.pyplot as plt
 import numpy as np
 import ray
-import ray.rllib.agents.dqn as dqn
-from environment.Furnace import Furnace
-from keras_model import KerasQModel
+import ray.rllib.algorithms.dqn as dqn
+from furnace import Furnace
+from model.keras_model import KerasQModel
 from ray.rllib.models import ModelCatalog
 
-from utils import create_config
-from utils import find_the_checkpoint_with_largest_id
-from utils import load_training_config
+from utils.utils import create_config
+from utils.utils import find_the_checkpoint_with_largest_id
+from utils.utils import load_training_config
 
 # ------------from keras_model import KerasQModel-------------------------
 # 1 - Setting the configs
@@ -24,15 +24,11 @@ from utils import load_training_config
 # 1.1 -- The configuration of the optimization problem
 # 1.1 -- The config of the DDQN trainer and its env.
 
-nr_repetitions = 1_000
-config = create_config(
-    base_config=dqn.DEFAULT_CONFIG.copy(),
-    env_cfg_dir='./',
-    agent_cfg_dir='./',
-)
+nr_repetitions = 3
+config = create_config(env_cfg_path="configs/env_config.json",
+                       algorithm_cfg_path="./configs/agent_config.json")
+training_config = load_training_config("./configs/training_config.json")
 # import pdb; pdb.set_trace()
-training_config = load_training_config(training_cfg_dir='./')
-
 find_the_latest_agent = False
 
 # the directory for outputting the performance analysis
@@ -68,7 +64,7 @@ if find_the_latest_agent:
 
 else:
     checkpoint_dir = \
-        'training_results/checkpoints/checkpoint_003201/checkpoint-3201'
+        'training_results/checkpoints/checkpoint_8200/'
 
 assert path.exists(
     checkpoint_dir,
@@ -80,7 +76,9 @@ ray.init()
 # ---------------------------------------------
 # 2.1 -- Creating the trainer within its env.
 config['explore'] = False
-agent = dqn.DQNTrainer(config=config, env=Furnace)
+config['exploration'] = {'type': 'EpsilonGreedy'}
+agent = dqn.DQNConfig().update_from_dict(config).environment(Furnace).build()
+
 agent.restore(checkpoint_path=checkpoint_dir)
 # policy = agent.get_policy()
 # instantiate env class
@@ -107,8 +105,8 @@ for exp_id in range(nr_repetitions):
     accumulated_energy_cost = 0
     accumulated_energy_cost_lst = []
     g2_lst = []
-    env.seed(seed=exp_id)
-    obs = env.reset()
+    # env.seed(seed=exp_id)
+    obs, _ = env.reset()
     counter = 0
     obs_lst.append(obs)
     density_lst = []
@@ -117,7 +115,8 @@ for exp_id in range(nr_repetitions):
     print('\nexp. id:', exp_id)
     while not done:
         action = agent.compute_single_action(obs, explore=False)
-        obs, reward, done, info = env.step(action)
+        obs, reward, terminated, truncated, info = env.step(action=action)
+        done = terminated or truncated
         accumulated_reward += reward
         action_lst.append(action)
         obs_lst.append(obs)
@@ -140,7 +139,7 @@ for exp_id in range(nr_repetitions):
     masses_lst = np.array(
         [
             np.mean(
-                obs_lst[i]['PF'][:, :, 0] - config['env_config']['shift_PF'],
+                obs_lst[i]['PF'][:, :, 0] - config['env_config']['shift_pf'],
             )
             for i in range(len(obs_lst))
         ],
